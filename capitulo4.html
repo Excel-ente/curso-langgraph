@@ -1,1 +1,170 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capítulo 4: Agente que Usa Excel - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li class="current"><a href="guia-de-estudio.html">Guía de Estudio</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                <li>Capítulo 4</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1>Capítulo 4: Tercer Agente (Agente que Usa Excel)</h1>
+            <p>Muchos datos valiosos residen en hojas de cálculo. En este capítulo, diseñaremos conceptualmente un agente capaz de interactuar con archivos de Excel (leer datos, procesarlos y quizás escribir nuevos archivos). <em>Al igual que el capítulo anterior, este es un enfoque conceptual que se basa en cómo LangGraph puede integrar herramientas externas.</em></p>
+
+            <section id="interaccion-datos-estructurados">
+                <h2>Interacción con Datos Estructurados</h2>
+                <p>Los agentes a menudo necesitan trabajar con datos estructurados, y las hojas de cálculo (como archivos <code>.xlsx</code> o <code>.csv</code>) son un formato muy común. Para esto, Python ofrece bibliotecas excelentes como Pandas y Openpyxl.</p>
+                <p><strong>Analogía:</strong> Imagina que nuestro agente es un analista de datos. Un archivo de Excel es como un informe tabular que recibe. El analista necesita herramientas (bibliotecas de Python) para abrir el informe, leer las tablas, realizar cálculos o transformaciones, y quizás generar un nuevo informe con los resultados.</p>
+            </section>
+
+            <section id="agente-procesador-excel">
+                <h2>Agente Procesador de Excel (Conceptual)</h2>
+                <p>Definamos cómo podría ser un agente que interactúa con Excel.</p>
+
+                <h3>Estado Propuesto para el Agente de Excel</h3>
+                <pre><code class="language-python">from typing import TypedDict, List, Optional, Any
+# 'Any' se usa aquí para la flexibilidad de los datos de Pandas DataFrame,
+# aunque en un escenario real podrías definir estructuras más específicas.
+
+class ExcelAgentState(TypedDict):
+    excel_file_path: Optional[str]
+    sheet_name: Optional[str]
+    data_to_process: Optional[Any] # Podría ser una lista de listas, o un DataFrame de Pandas
+    processed_results: Optional[Any]
+    action: Optional[str] # Ej: "read_sheet", "write_sheet", "process_data"
+    output_file_path: Optional[str]
+    operation_status: Optional[str]
+    messages: List[str]
+</code></pre>
+
+                <h3>Nodos Propuestos</h3>
+                <ul>
+                    <li><strong><code>DetermineExcelActionNode</code>:</strong> Similar al capítulo anterior, este nodo decidiría qué hacer (leer, escribir, procesar) basándose en una entrada o el estado, actualizando <code>action</code>, <code>excel_file_path</code>, etc.</li>
+                    <li><strong><code>ReadExcelNode</code>:</strong> Si <code>action</code> es "read_sheet", usaría Pandas (o openpyxl) para leer los datos de <code>excel_file_path</code> y <code>sheet_name</code>, guardándolos en <code>data_to_process</code>.</li>
+                    <li><strong><code>ProcessDataNode</code>:</strong> Si <code>action</code> es "process_data", realizaría alguna operación sobre <code>data_to_process</code> (ej. filtrar filas, calcular una nueva columna) y guardaría el resultado en <code>processed_results</code>.</li>
+                    <li><strong><code>WriteExcelNode</code>:</strong> Si <code>action</code> es "write_sheet", usaría Pandas para escribir <code>processed_results</code> (o <code>data_to_process</code>) a <code>output_file_path</code>.</li>
+                </ul>
+
+                <p><strong>Ejemplo de un Nodo (conceptual usando Pandas):</strong></p>
+                <pre><code class="language-python">import pandas as pd
+
+# Asumiendo ExcelAgentState definido arriba
+
+def read_excel_node(state: ExcelAgentState) -> ExcelAgentState:
+    print("--- NODE: ReadExcelNode ---")
+    updated_state = state.copy()
+    file_path = state.get("excel_file_path")
+    sheet = state.get("sheet_name") # Puede ser None para la primera hoja
+
+    if not file_path:
+        updated_state["operation_status"] = "Error: Ruta del archivo Excel no especificada."
+        return updated_state
+    
+    try:
+        print(f"Leyendo hoja '{sheet if sheet else 'default'}' de '{file_path}'...")
+        df = pd.read_excel(file_path, sheet_name=sheet)
+        # Convertimos el DataFrame a una lista de diccionarios para mejor compatibilidad con JSON/TypedDict
+        # o podríamos mantenerlo como DataFrame si el estado lo maneja (requiere serialización cuidadosa)
+        updated_state["data_to_process"] = df.to_dict(orient="records") 
+        updated_state["operation_status"] = f"Datos leídos de '{file_path}' exitosamente."
+        print(f"Datos leídos: {len(df)} filas.")
+    except Exception as e:
+        updated_state["operation_status"] = f"Error al leer archivo Excel: {str(e)}"
+        updated_state["data_to_process"] = None
+        print(f"Error: {str(e)}")
+    
+    updated_state["action"] = None # Limpiar acción
+    return updated_state
+</code></pre>
+                <h3>Construcción del Grafo</h3>
+                <p>Nuevamente, se usaría <code>add_conditional_edge</code> para enrutar el flujo según el campo <code>action</code> del estado. Por ejemplo, un flujo podría ser: <code>DetermineExcelActionNode</code> -> (condicional) -> <code>ReadExcelNode</code> -> <code>ProcessDataNode</code> -> <code>WriteExcelNode</code> -> <code>END</code>.</p>
+            </section>
+
+            <section id="integracion-bibliotecas-excel">
+                <h2>Integración de Bibliotecas de Excel</h2>
+                <p>Las bibliotecas clave para trabajar con archivos de Excel en Python son:</p>
+                <ul>
+                    <li><strong>Pandas:</strong> Excelente para análisis de datos y manipulación de tablas. Puede leer y escribir fácilmente desde/hacia formatos Excel (<code>.xls</code>, <code>.xlsx</code>), CSV, y muchos otros.
+                        <ul>
+                            <li><code>pd.read_excel(file_path, sheet_name='Sheet1')</code></li>
+                            <li><code>df.to_excel(output_file_path, sheet_name='Sheet1', index=False)</code> (<code>df</code> es un DataFrame de Pandas)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Openpyxl:</strong> Una biblioteca para leer y escribir archivos Excel 2010 xlsx/xlsm/xltx/xltm. Pandas la usa por debajo para archivos <code>.xlsx</code>, pero también puedes usarla directamente para un control más granular sobre el formato de las celdas, estilos, etc.</li>
+                </ul>
+                <p>Para usar estas bibliotecas, primero necesitarías instalarlas en tu entorno (ej. <code>poetry add pandas openpyxl</code>).</p>
+                <p><strong>Ejemplo (dentro de un nodo para escribir con Pandas):</strong></p>
+                <pre><code class="language-python"># (Dentro de una función de nodo WriteExcelNode)
+# state: ExcelAgentState
+# ...
+# output_path = state.get("output_file_path")
+# data_to_write = state.get("processed_results") # Asumimos que es una lista de diccionarios
+
+# if not output_path or data_to_write is None:
+#     state["operation_status"] = "Error: Ruta de salida o datos para escribir no especificados."
+#     return state
+
+# try:
+#     df_output = pd.DataFrame(data_to_write)
+#     df_output.to_excel(output_path, index=False)
+#     state["operation_status"] = f"Datos escritos exitosamente en '{output_path}'."
+# except Exception as e:
+#     state["operation_status"] = f"Error al escribir archivo Excel: {str(e)}"
+# return state
+# ...
+</code></pre>
+            </section>
+
+            <section id="prueba-depuracion-excel">
+                <h2>Prueba y Depuración</h2>
+                <p>Con LangGraph Studio, el proceso de depuración sería similar al del agente de sistema de archivos:</p>
+                <ul>
+                    <li>Prepara un archivo Excel de prueba.</li>
+                    <li>Inicia el agente con un estado que apunte a ese archivo y especifique una acción (ej. leer una hoja específica).</li>
+                    <li>Observa el estado en LangGraph Studio: ¿Se carga <code>excel_file_path</code>? ¿El nodo <code>ReadExcelNode</code> llena correctamente <code>data_to_process</code>? ¿Se parece a los datos de tu archivo?</li>
+                    <li>Si tienes un nodo de procesamiento, verifica que <code>processed_results</code> contenga lo esperado.</li>
+                    <li>Si tienes un nodo de escritura, verifica que el archivo se cree/actualice correctamente en tu sistema.</li>
+                </ul>
+                <p>Los desafíos comunes pueden incluir manejar diferentes formatos de hojas de cálculo, errores al encontrar archivos, hojas con nombres incorrectos, o problemas al convertir tipos de datos entre Excel y Python.</p>
+            </section>
+
+            <p>Hemos diseñado conceptualmente un agente capaz de leer y potencialmente escribir datos en archivos Excel. El siguiente paso lógico es hacer que diferentes tipos de agentes colaboren.</p>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <a href="capitulo3.html" class="button">&larr; Capítulo 3: Agente Sistema Archivos</a>
+                <a href="capitulo5.html" class="button">Siguiente: Capítulo 5 &rarr;</a>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+</body>
+</html>

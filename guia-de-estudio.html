@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Estudio - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .study-guide-section {
+            margin-bottom: 30px;
+        }
+        .study-guide-section h2 {
+            border-bottom: 2px solid #e8491d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .study-guide-section h3 {
+            color: #35424a;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .question-list li, .answer-key li, .essay-questions li {
+            margin-bottom: 15px;
+        }
+        .glossary dt {
+            font-weight: bold;
+            color: #e8491d;
+            margin-top: 10px;
+        }
+        .glossary dd {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li class="current"><a href="guia-de-estudio.html">Guía de Estudio</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li>Guía de Estudio</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1><emoji_code>📚</emoji_code> Guía de Estudio: Curso Básico - Creación de Agentes con LangGraph</h1>
+            <p>Esta guía de estudio te ayudará a repasar los conceptos cubiertos en los extractos proporcionados del "Curso Básico: Creación de Agentes con LangGraph".</p>
+
+            <hr>
+
+            <section class="study-guide-section" id="repaso-corta">
+                <h2>Preguntas de Repaso (Respuesta Corta) <emoji_code>✍️</emoji_code></h2>
+                <h3>Instrucciones:</h3>
+                <p>Responde cada pregunta en 2-3 oraciones, basándote en la información de los extractos.</p>
+                <ol class="question-list">
+                    <li>¿Qué es LangGraph en el contexto de este curso?</li>
+                    <li>¿Cuál es el propósito principal de este curso?</li>
+                    <li>¿Qué tipo de sistemas de LLMs busca construir LangGraph según el diagrama conceptual?</li>
+                    <li>Nombra al menos tres elementos clave que LangGraph permite en las aplicaciones basadas en LLMs.</li>
+                    <li>¿Qué significa "orquestar" múltiples componentes (agentes) en LangGraph?</li>
+                    <li>Según los temas a aprender, ¿qué se espera que seas capaz de hacer con un agente básico al principio del curso?</li>
+                    <li>¿Qué tipo de archivos se mencionan específicamente para la interacción con agentes en el curso?</li>
+                    <li>¿Cómo se describen las tareas complejas que se abordan con agentes colaborativos en el curso?</li>
+                    <li>Además de la creación de agentes, ¿qué otras fases del ciclo de vida de una aplicación con agentes se mencionan que se abordarán?</li>
+                    <li>¿Qué tipo de sistemas son el enfoque principal para aprender a orquestar con LangGraph?</li>
+                </ol>
+            </section>
+
+            <hr>
+
+            <section class="study-guide-section" id="clave-respuestas">
+                <h2>Clave de Respuestas (Preguntas de Repaso) <emoji_code>🔑</emoji_code></h2>
+                <ol class="answer-key">
+                    <li><strong>LangGraph</strong> es un framework poderoso y flexible para construir aplicaciones basadas en LLMs que requieren <strong>ciclos</strong>, <strong>estado</strong> y la coordinación de múltiples componentes (<strong>agentes</strong>).</li>
+                    <li>El propósito principal del curso es introducir el mundo de los <strong>sistemas multiagente</strong> y cómo <strong>orquestarlos</strong> utilizando LangGraph en Python.</li>
+                    <li>Según el diagrama conceptual (implícito por la descripción), LangGraph busca construir aplicaciones basadas en LLMs que incluyan <strong>ciclos</strong> y <strong>estado</strong>.</li>
+                    <li>LangGraph permite <strong>ciclos</strong>, <strong>estado</strong> y la <strong>coordinación de múltiples componentes (agentes)</strong> en las aplicaciones basadas en LLMs.</li>
+                    <li><strong>Orquestar</strong> múltiples componentes (agentes) en LangGraph significa coordinar su funcionamiento para lograr un objetivo común.</li>
+                    <li>Al principio del curso, se espera que aprendas a <strong>crear tu primer agente</strong> y <strong>manipular su estado</strong>.</li>
+                    <li>Los tipos de archivos mencionados específicamente para la interacción son el <strong>sistema de archivos</strong> y las <strong>hojas de cálculo Excel</strong>.</li>
+                    <li>Las tareas complejas se abordan mediante la <strong>orquestación de agentes colaborativos</strong>.</li>
+                    <li>Además de la creación, se abordarán la <strong>depuración</strong> y el <strong>despliegue básico</strong> de los agentes.</li>
+                    <li>El enfoque principal para aprender a orquestar con LangGraph son los <strong>sistemas multiagente</strong>.</li>
+                </ol>
+            </section>
+
+            <hr>
+
+            <section class="study-guide-section" id="ensayo">
+                <h2>Preguntas en Formato de Ensayo <emoji_code>📜</emoji_code></h2>
+                <h3>Instrucciones:</h3>
+                <p>Reflexiona sobre los siguientes temas y prepara una respuesta detallada en formato de ensayo. No se proporcionan respuestas.</p>
+                <ul class="essay-questions">
+                    <li>Explica la importancia de los "ciclos" y el "estado" en las aplicaciones basadas en LLMs que LangGraph está diseñado para manejar, basándote en el diagrama conceptual y la descripción.</li>
+                    <li>Analiza cómo la "orquestación de agentes colaborativos" permite abordar "tareas complejas" de una manera diferente a un sistema de LLM simple.</li>
+                    <li>Describe los pasos o módulos que esperarías encontrar en este curso, basándote en los temas listados en la sección "¿Qué aprenderás?".</li>
+                    <li>Considerando que LangGraph es para construir aplicaciones basadas en LLMs, ¿por qué sería crucial aprender sobre la interacción con el sistema de archivos y hojas de cálculo Excel?</li>
+                    <li>Compara y contrasta la idea de un "agente" en LangGraph con un modelo de lenguaje grande (LLM) standalone, según lo que sugieren los extractos.</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <section class="study-guide-section" id="glosario">
+                <h2>Glosario de Términos Clave <emoji_code>📖</emoji_code></h2>
+                <dl class="glossary">
+                    <dt>LangGraph:</dt>
+                    <dd>Framework de Python diseñado para construir aplicaciones basadas en LLMs que requieren ciclos, estado y la coordinación de múltiples componentes (agentes).</dd>
+
+                    <dt>Sistemas multiagente:</dt>
+                    <dd>Aplicaciones o estructuras donde múltiples agentes interactúan y colaboran para lograr un objetivo común.</dd>
+
+                    <dt>Orquestación:</dt>
+                    <dd>El proceso de coordinar y gestionar la interacción y el flujo de trabajo entre múltiples componentes o agentes en un sistema.</dd>
+
+                    <dt>Agente:</dt>
+                    <dd>Un componente dentro de un sistema LangGraph capaz de realizar tareas específicas y potencialmente interactuar con otros agentes y su entorno.</dd>
+
+                    <dt>LLM (Large Language Model):</dt>
+                    <dd>Un modelo de lenguaje grande, la tecnología subyacente en la que se basan las aplicaciones construidas con LangGraph.</dd>
+
+                    <dt>Ciclos:</dt>
+                    <dd>En el contexto de LangGraph, se refiere a la capacidad de la aplicación para tener flujos de ejecución que pueden repetirse o volver a puntos anteriores.</dd>
+
+                    <dt>Estado:</dt>
+                    <dd>La información que se mantiene y puede ser accedida o modificada por los agentes a medida que el sistema procesa una tarea.</dd>
+
+                    <dt>Framework:</dt>
+                    <dd>Una estructura de soporte y una guía que facilita el desarrollo de software, en este caso, aplicaciones basadas en LLMs con múltiples agentes.</dd>
+                </dl>
+            </section>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <a href="tabla-de-contenidos.html" class="button">Volver a la Tabla de Contenidos</a>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+
+    </body>
+</html>

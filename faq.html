@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos específicos para la página de FAQ si son necesarios */
+        .faq-item {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-item h3 {
+            color: #e8491d; /* Color de acento para las preguntas */
+            margin-bottom: 8px;
+        }
+        .faq-item p {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li class="current"><a href="guia-de-estudio.html">Guía de Estudio</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li>Preguntas Frecuentes</li>
+            </ul>
+        </nav>
+
+        <section class="main-content">
+            <h1><emoji_code>❓</emoji_code> Preguntas Frecuentes (FAQ)</h1>
+            <p>Aquí encontrarás respuestas a algunas de las preguntas más comunes sobre LangGraph y este curso.</p>
+
+            <div class="faq-item">
+                <h3>¿Qué es LangGraph?</h3>
+                <p>LangGraph es un framework en Python <emoji_code>🐍</emoji_code> diseñado para construir aplicaciones basadas en Large Language Models (LLMs). Su fortaleza reside en su capacidad para manejar <strong>ciclos</strong>, <strong>estado</strong> y la coordinación de múltiples componentes, a los que denomina <strong>agentes</strong>. Es particularmente útil para crear sistemas multiagente.</p>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Cuál es el objetivo del Curso Básico de Creación de Agentes con LangGraph?</h3>
+                <p>El curso tiene como objetivo introducir a los estudiantes al mundo de los <strong>sistemas multiagente</strong> y enseñarles a orquestarlos utilizando el framework LangGraph en Python. Se enfoca en los <strong>fundamentos</strong> de LangGraph y cómo construir agentes que interactúen entre sí <emoji_code>🤝</emoji_code>.</p>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Qué tipo de sistemas se pueden construir con LangGraph?</h3>
+                <p>Con LangGraph se pueden construir aplicaciones basadas en LLMs que requieren la <strong>coordinación de varios componentes o agentes</strong>. Su capacidad para manejar ciclos y estado lo hace adecuado para sistemas que necesitan un flujo de trabajo más complejo que la simple ejecución lineal.</p>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Qué temas principales se abordarán en el Curso Básico de LangGraph?</h3>
+                <p>El curso cubre una serie de temas fundamentales, incluyendo:</p>
+                <ul>
+                    <li>Conceptos de sistemas multiagente y LangGraph <emoji_code>🧠</emoji_code>.</li>
+                    <li>Configuración del entorno de desarrollo <emoji_code>🛠️</emoji_code>.</li>
+                    <li>Creación y manipulación de estado de agentes básicos.</li>
+                    <li>Interacción con sistemas de archivos y hojas de cálculo <emoji_code>📄</emoji_code><emoji_code>📊</emoji_code>.</li>
+                    <li>Orquestación de agentes colaborativos para tareas complejas.</li>
+                    <li>Depuración y despliegue básico.</li>
+                </ul>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Es LangGraph un framework para crear un solo agente o múltiples agentes?</h3>
+                <p>LangGraph está explícitamente diseñado para la <strong>orquestación de múltiples componentes o agentes</strong>. Su arquitectura está pensada para facilitar la interacción y colaboración entre ellos.</p>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Se requiere conocimiento previo de sistemas multiagente para tomar el curso?</h3>
+                <p>El curso básico introduce los conceptos fundamentales de los sistemas multiagente y LangGraph, lo que sugiere que <strong>no se requiere un conocimiento profundo previo</strong> <emoji_code>🧑‍🏫</emoji_code>, sino que el curso proporciona la base necesaria.</p>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Qué tipo de tareas complejas pueden abordar los agentes orquestados con LangGraph?</h3>
+                <p>Aunque los textos no especifican tareas concretas, mencionan la orquestación de agentes colaborativos para "tareas complejas". Dada la capacidad de interactuar con sistemas de archivos y hojas de cálculo, es plausible que se puedan abordar tareas que involucren <strong>procesamiento de datos</strong>, <strong>generación de informes</strong>, o flujos de trabajo que requieran acceso a información externa y coordinación entre diferentes "expertos" (agentes) <emoji_code>🕵️</emoji_code>.</p>
+            </div>
+            <hr>
+            <div class="faq-item">
+                <h3>¿Qué significa que LangGraph permite manejar "ciclos" y "estado"?</h3>
+                <p>Manejar "<strong>estado</strong>" <emoji_code>💾</emoji_code> significa que el sistema puede recordar información a lo largo de su ejecución, lo que permite que las decisiones futuras se basen en acciones pasadas o datos recopilados. Manejar "<strong>ciclos</strong>" <emoji_code>🔄</emoji_code> implica que el flujo de ejecución no es necesariamente lineal; puede haber bucles o iteraciones donde los agentes interactúan repetidamente hasta alcanzar un objetivo o condición. Estas características son cruciales para la construcción de sistemas más sofisticados y adaptables.</p>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <a href="tabla-de-contenidos.html" class="button">Volver a la Tabla de Contenidos</a>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+
+    </body>
+</html>
