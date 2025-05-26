@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capítulo 1: Introducción y Conceptos Básicos - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+    </head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                <li>Capítulo 1</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1>Capítulo 1: Introducción y Conceptos Básicos</h1>
+            <p>Bienvenido al primer capítulo. Aquí sentaremos las bases para entender qué son los sistemas multiagente, cómo LangGraph nos ayuda a construirlos y cómo preparar nuestro entorno de desarrollo.</p>
+
+            <section id="sistemas-multiagente">
+                <h2>¿Qué son los sistemas multiagente?</h2>
+                <p>Los sistemas multiagente (SMA) son sistemas compuestos por múltiples entidades autónomas e interactivas llamadas "agentes". Estos agentes colaboran para resolver problemas que serían difíciles o imposibles para un solo agente o un sistema monolítico [1].</p>
+                <p><strong>Analogía:</strong> Imagina una colmena de abejas. Cada abeja (agente) tiene tareas específicas (recolectar néctar, cuidar larvas, defender la colmena). Ninguna abeja individualmente "entiende" el funcionamiento completo de la colmena, pero su interacción y colaboración coordinada resultan en el éxito y supervivencia de la colonia. De manera similar, en un SMA, cada agente puede tener capacidades especializadas, y su trabajo conjunto lleva a la consecución de un objetivo mayor.</p>
+                <ul>
+                    <li><strong>Autonomía:</strong> Los agentes operan sin intervención directa de humanos u otros agentes, teniendo control sobre sus acciones y estado interno.</li>
+                    <li><strong>Reactividad:</strong> Perciben su entorno y responden de manera oportuna a los cambios que ocurren en él.</li>
+                    <li><strong>Proactividad:</strong> No solo actúan en respuesta al entorno, sino que también pueden tomar la iniciativa para alcanzar sus objetivos.</li>
+                    <li><strong>Habilidad social:</strong> Pueden interactuar con otros agentes (y a veces con humanos) mediante algún tipo de lenguaje o protocolo de comunicación.</li>
+                </ul>
+            </section>
+
+            <section id="intro-langgraph">
+                <h2>Introducción a LangGraph</h2>
+                <p>LangGraph es un framework de Python diseñado para facilitar la creación de aplicaciones robustas y "stateful" (que mantienen un estado) basadas en Modelos de Lenguaje Grandes (LLMs), especialmente aquellas que involucran la orquestación de múltiples agentes o componentes que operan en ciclos [2].</p>
+                <ul>
+                    <li>Se presenta como una extensión de la popular biblioteca LangChain, enfocándose en la construcción de sistemas de agentes conectados [2].</li>
+                    <li>Utiliza un sistema de grafos o nodos como base para definir el flujo de trabajo de los agentes [2]. Cada nodo puede representar un agente o una función específica.</li>
+                    <li>Destaca por su flexibilidad en cuanto a la arquitectura de carpetas del proyecto, permitiendo organizar el código de manera modular [2].</li>
+                    <li>LangGraph es de código abierto y gratuito bajo la licencia MIT, fomentando su adopción y contribución por la comunidad [3].</li>
+                </ul>
+                <p><strong>Analogía:</strong> Piensa en LangGraph como el director de una orquesta. Cada músico (agente) sabe tocar su instrumento (realizar su tarea específica). El director (LangGraph) no toca todos los instrumentos, pero coordina a los músicos, les indica cuándo entrar, cómo tocar y asegura que la pieza musical (la tarea compleja) se ejecute armoniosamente. El "estado" sería como la partitura compartida que todos pueden ver y seguir.</p>
+            </section>
+
+            <section id="config-entorno">
+                <h2>Configuración del Entorno de Desarrollo</h2>
+                <p>Una configuración adecuada del entorno es crucial para un desarrollo fluido. Aquí detallamos los pasos recomendados:</p>
+                <ul>
+                    <li><strong>Creación de una carpeta de proyecto [2]:</strong>
+                        <pre><code class="language-bash">mkdir mi_proyecto_langgraph
+cd mi_proyecto_langgraph</code></pre>
+                    </li>
+                    <li><strong>Uso de un archivo <code>.gitignore</code> [2]:</strong> Es fundamental para evitar que archivos innecesarios (como configuraciones locales, archivos <code>.env</code> con claves secretas, o directorios de entornos virtuales) se suban al control de versiones (ej. Git).
+                        <p>Ejemplo de <code>.gitignore</code>:</p>
+                        <pre><code># Entornos virtuales
+venv/
+env/
+.venv/
+__pycache__/
+*.pyc
+
+# Archivos de configuración de IDEs
+.vscode/
+.idea/
+
+# Archivos de variables de entorno
+.env
+*.env
+
+# Archivos de LangGraph (ej. logs, db)
+langgraph.db
+*.sqlite
+logs/
+
+# Dependencias de Python (si no usas Poetry o similar para lock)
+# build/
+# dist/
+# *.egg-info/</code></pre>
+                    </li>
+                    <li><strong>Configuración de un entorno virtual con Conda [4]:</strong> Conda es un gestor de paquetes y entornos muy popular, especialmente en proyectos de Data Science e IA, ya que maneja bien las dependencias complejas, incluidas las no-Python.
+                        <pre><code class="language-bash">conda create --name mi_entorno_lg python=3.10 -y</code></pre>
+                        <p>Explica por qué Conda es útil: aislamiento de dependencias, manejo de paquetes binarios, facilidad para reproducir entornos.</p>
+                    </li>
+                    <li><strong>Activación del entorno Conda [4]:</strong>
+                        <pre><code class="language-bash">conda activate mi_entorno_lg</code></pre>
+                    </li>
+                    <li><strong>Uso de Poetry como gestor de dependencias en Python [5]:</strong> Poetry ayuda a gestionar las dependencias del proyecto, sus versiones, y a construir y empaquetar el proyecto. Es una alternativa moderna a <code>requirements.txt</code> y <code>setup.py</code>.
+                        <p><strong>Analogía (Poetry):</strong> Si Conda es como tener diferentes cajas de herramientas para diferentes tipos de trabajo (proyectos de carpintería, plomería), Poetry es como un inventario detallado y un organizador dentro de tu caja de herramientas de "Python". Se asegura de que tengas exactamente las herramientas (bibliotecas) correctas, de las versiones correctas, y que todas funcionen bien juntas para ese proyecto específico.</p>
+                    </li>
+                    <li><strong>Inicialización de Poetry en el proyecto [6]:</strong>
+                        <pre><code class="language-bash">poetry init</code></pre>
+                        <p>(Sigue las instrucciones, puedes aceptar los valores por defecto o personalizarlos. Es importante que el nombre del paquete, si se configura, coincida con la estructura de carpetas raíz si planeas hacer un paquete instalable, por ejemplo, una carpeta `app` si el paquete se llama `app` [6]).</p>
+                    </li>
+                    <li><strong>Importancia de la estructura de módulos y paquetes en Python [6]:</strong> Asegurar que la carpeta raíz (por ejemplo, `src/nombre_paquete` o directamente `nombre_paquete` en la raíz del proyecto) coincida con el nombre del paquete (ej. `app` en el ejemplo) es crucial para que Python pueda encontrar e importar tus módulos correctamente. Un archivo `__init__.py` en los directorios los convierte en paquetes.</li>
+                    <li><strong>Creación de un archivo de ejemplo para variables de entorno (<code>example.env</code>) [4]:</strong> Este archivo sirve como plantilla. El archivo real <code>.env</code> (que estará en <code>.gitignore</code>) contendrá las claves de API reales (OpenAI, Mistral, Azure, Cloudflare, etc.).
+                        <p>Contenido de <code>example.env</code>:</p>
+                        <pre><code>OPENAI_API_KEY="tu_clave_aqui"
+MISTRAL_API_KEY="tu_clave_aqui"
+# etc.</code></pre>
+                    </li>
+                    <li><strong>Configuración del intérprete de Python en el IDE [5, 6]:</strong> (Como VS Code o Cursor) para usar el entorno Conda creado. Esto asegura que el IDE use las bibliotecas instaladas en `mi_entorno_lg`.
+                        <p>En VS Code: Abrir la paleta de comandos (Ctrl+Shift+P o Cmd+Shift+P) y buscar "Python: Select Interpreter", luego elegir el entorno Conda `mi_entorno_lg`.</p>
+                    </li>
+                    <li><strong>Instalación de las dependencias básicas [7]:</strong>
+                        <pre><code class="language-bash">poetry add langgraph langchain-openai python-dotenv</code></pre>
+                        <p>(<code>langchain-openai</code> para interactuar con modelos de OpenAI, <code>python-dotenv</code> para cargar variables de entorno desde el archivo <code>.env</code>).</p>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="concepto-estado">
+                <h2>Concepto de Estado en LangGraph</h2>
+                <p>El "estado" en LangGraph es un concepto fundamental. Actúa como la memoria compartida o el contexto que se pasa entre todos los nodos (agentes) de tu grafo [1]. Permite que la información y el historial de interacciones se mantengan y se actualicen a medida que la aplicación procesa una tarea.</p>
+                <p><strong>Analogía:</strong> Piensa en el estado como una pizarra en una sala de reuniones donde varios expertos (agentes) están trabajando en un proyecto. Cada experto puede leer la información en la pizarra, añadir nuevos hallazgos, o modificar datos existentes. Esta pizarra compartida (el estado) asegura que todos estén al tanto del progreso y puedan construir sobre el trabajo de los demás.</p>
+                <ul>
+                    <li>Se define utilizando <code>TypedDict</code> de la biblioteca <code>typing</code> de Python [1]. Esto permite definir una estructura clara para el estado con tipos específicos para cada campo.</li>
+                    <li>Ejemplos simples de cómo se puede estructurar el estado [1]:
+                        <pre><code class="language-python">from typing import TypedDict, List
+
+class AgentState(TypedDict):
+    my_bar: str
+    customer_name: str
+    messages: List[str] # Para un historial de chat, por ejemplo
+    # Otros campos relevantes para tu aplicación</code></pre>
+                    </li>
+                    <li>El estado se comparte globalmente entre los agentes (nodos) [1, 8]. Esto es crucial porque permite que un agente detecte y recolecte información que otro agente puede necesitar o usar posteriormente para tomar decisiones o realizar acciones.</li>
+                </ul>
+                <p>Entender y diseñar correctamente el estado es clave para construir flujos de agentes efectivos en LangGraph.</p>
+            </section>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <span></span>
+                <a href="capitulo2.html" class="button">Siguiente: Capítulo 2 &rarr;</a>
+            </div>
+
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+
+    </body>
+</html>

@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capítulo 3: Agente con Sistema de Archivos - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                <li>Capítulo 3</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1>Capítulo 3: Segundo Agente (Interacción con el Sistema de Archivos)</h1>
+            <p>Los agentes se vuelven mucho más poderosos cuando pueden interactuar con el mundo exterior, como leer o escribir archivos. En este capítulo, exploraremos cómo construir un agente que interactúe con el sistema de archivos. <em>Este capítulo presenta un enfoque conceptual, ya que la implementación detallada de "tool calling" con el sistema de archivos va más allá de los ejemplos básicos iniciales de LangGraph.</em></p>
+
+            <section id="intro-herramientas-externas">
+                <h2>Introducción a la Interacción con Herramientas Externas</h2>
+                <p>Para que los agentes sean verdaderamente útiles, a menudo necesitan realizar acciones más allá de la manipulación de su estado interno. Necesitan interactuar con sistemas externos: bases de datos, APIs, el sistema de archivos, etc. En LangGraph, esto se logra generalmente haciendo que un nodo llame a "funciones de herramienta" (tool functions) o "call functions" [8].</p>
+                <p><strong>Analogía:</strong> Si nuestro agente es un oficinista (nodo), una "herramienta externa" podría ser una fotocopiadora, un archivador o un programa de software específico. El oficinista no tiene estas herramientas incorporadas, pero sabe cómo usarlas para realizar su trabajo.</p>
+            </section>
+
+            <section id="agente-navegador-archivos">
+                <h2>Agente Navegador de Archivos (Conceptual)</h2>
+                <p>Vamos a diseñar conceptualmente un agente que pueda realizar operaciones básicas en el sistema de archivos, como listar archivos, crear un archivo o navegar por directorios.</p>
+                
+                <h3>Nuevo Estado Propuesto</h3>
+                <p>Definiríamos un nuevo estado que pueda incluir información relevante para estas tareas:</p>
+                <pre><code class="language-python">from typing import TypedDict, List, Optional
+
+class FileSystemAgentState(TypedDict):
+    current_directory: str
+    file_list: Optional[List[str]]
+    action_to_perform: Optional[str] # Ej: "list", "create", "navigate"
+    target_path: Optional[str]       # Ej: nombre de archivo a crear, directorio al que navegar
+    file_content: Optional[str]      # Contenido para escribir en un archivo
+    operation_status: Optional[str]  # Resultado de la operación
+    messages: List[str]              # Para historial o logs
+</code></pre>
+
+                <h3>Nodos Propuestos</h3>
+                <p>Definiríamos nodos que representen diferentes acciones:</p>
+                <ul>
+                    <li><strong>Nodo <code>DecideActionNode</code>:</strong> Este nodo podría usar un LLM (o lógica programada) para determinar qué acción realizar basándose en una entrada del usuario o el estado actual (ej. un mensaje en <code>messages</code> como "listar archivos en /home/user"). Actualizaría <code>action_to_perform</code> y <code>target_path</code>.</li>
+                    <li><strong>Nodo <code>ListFilesNode</code>:</strong> Si <code>action_to_perform</code> es "list", este nodo usaría el módulo <code>os</code> de Python para listar el contenido de <code>current_directory</code> (o <code>target_path</code> si se especifica) y guardaría el resultado en <code>file_list</code> y <code>operation_status</code>.</li>
+                    <li><strong>Nodo <code>CreateFileNode</code>:</strong> Si <code>action_to_perform</code> es "create", crearía un archivo en <code>target_path</code> con el contenido de <code>file_content</code>. Actualizaría <code>operation_status</code>.</li>
+                    <li><strong>Nodo <code>NavigateDirectoryNode</code>:</strong> Si <code>action_to_perform</code> es "navigate", cambiaría <code>current_directory</code> a <code>target_path</code>. Actualizaría <code>operation_status</code>.</li>
+                </ul>
+
+                <p><strong>Ejemplo de un Nodo (conceptual):</strong></p>
+                <pre><code class="language-python">import os
+
+# Asumiendo FileSystemAgentState definido arriba
+
+def list_files_node(state: FileSystemAgentState) -> FileSystemAgentState:
+    print("--- NODE: ListFilesNode ---")
+    updated_state = state.copy()
+    try:
+        path_to_list = state.get("target_path") or state["current_directory"]
+        if os.path.isdir(path_to_list):
+            updated_state["file_list"] = os.listdir(path_to_list)
+            updated_state["operation_status"] = f"Archivos listados en '{path_to_list}'."
+            print(f"Archivos en '{path_to_list}': {updated_state['file_list']}")
+        else:
+            updated_state["operation_status"] = f"Error: '{path_to_list}' no es un directorio válido."
+            updated_state["file_list"] = None
+    except Exception as e:
+        updated_state["operation_status"] = f"Error al listar archivos: {str(e)}"
+        updated_state["file_list"] = None
+        print(f"Error: {str(e)}")
+    
+    updated_state["action_to_perform"] = None # Limpiar acción
+    return updated_state
+</code></pre>
+
+                <h3>Construcción del Grafo (Conceptual)</h3>
+                <p>Aquí, <code>add_conditional_edge</code> sería crucial. Después del <code>DecideActionNode</code>, el flujo se dirigiría al nodo de acción apropiado (<code>ListFilesNode</code>, <code>CreateFileNode</code>, etc.) basándose en el valor de <code>action_to_perform</code> en el estado. Cada uno de estos nodos de acción podría luego volver a un nodo de "finalización" o de nuevo al nodo de decisión para un ciclo interactivo.</p>
+            </section>
+
+            <section id="integracion-herramientas-tool-calling">
+                <h2>Integración de Herramientas (Tool Calling)</h2>
+                <p>La interacción real con el sistema de archivos dentro de un nodo se haría utilizando bibliotecas estándar de Python, principalmente el módulo <code>os</code> y <code>shutil</code>.</p>
+                <ul>
+                    <li><code>os.listdir(path)</code>: Para listar archivos y directorios.</li>
+                    <li><code>os.mkdir(path)</code>: Para crear un directorio.</li>
+                    <li><code>os.path.join(path1, path2, ...)</code>: Para construir rutas de archivo de forma segura.</li>
+                    <li><code>os.path.exists(path)</code>: Para verificar si un archivo o directorio existe.</li>
+                    <li><code>os.path.isfile(path)</code> / <code>os.path.isdir(path)</code>: Para verificar si es un archivo o directorio.</li>
+                    <li><code>open(path, 'w')</code>: Para escribir archivos (y 'r' para leer, 'a' para añadir).</li>
+                </ul>
+                <p>Un nodo en LangGraph puede ser cualquier función de Python. Por lo tanto, dentro de la función que define tu nodo, puedes simplemente importar y usar estas funciones del módulo <code>os</code>.</p>
+                <p><strong>Ejemplo (dentro de un nodo):</strong></p>
+                <pre><code class="language-python"># (Dentro de una función de nodo que recibe 'state')
+# state: FileSystemAgentState
+# ...
+# target_file_path = os.path.join(state["current_directory"], state["target_path"])
+# content_to_write = state.get("file_content", "")
+# try:
+#     with open(target_file_path, "w") as f:
+#         f.write(content_to_write)
+#     state["operation_status"] = f"Archivo '{target_file_path}' creado exitosamente."
+# except Exception as e:
+#     state["operation_status"] = f"Error al crear archivo: {str(e)}"
+# return state
+# ...
+</code></pre>
+                <p>El concepto de "Tool Calling" en el contexto de LangChain/LangGraph a menudo implica que un LLM decida qué herramienta llamar y con qué parámetros. El nodo luego ejecutaría esa herramienta (que podría ser una función Python como las anteriores) y devolvería el resultado al LLM o al siguiente paso del grafo.</p>
+            </section>
+
+            <section id="prueba-depuracion-fs">
+                <h2>Prueba y Depuración</h2>
+                <p>Al igual que con nuestro primer agente, LangGraph Studio sería invaluable aquí. Podrías:</p>
+                <ul>
+                    <li>Iniciar el agente con un estado inicial (ej. <code>current_directory</code>, y una instrucción en <code>messages</code> como "crea un archivo llamado test.txt con el contenido hola").</li>
+                    <li>Observar cómo el <code>DecideActionNode</code> (hipotético) actualiza <code>action_to_perform</code>, <code>target_path</code>, y <code>file_content</code>.</li>
+                    <li>Ver cómo el flujo se dirige al <code>CreateFileNode</code>.</li>
+                    <li>Verificar el <code>operation_status</code> en el estado después de la ejecución del nodo.</li>
+                    <li>Y, lo más importante, ¡comprobar en tu sistema de archivos si el archivo se creó realmente!</li>
+                </ul>
+                <p>La depuración implicaría verificar que las rutas se construyen correctamente, que los permisos de archivo son adecuados y que los errores se manejan con gracia (actualizando <code>operation_status</code> en lugar de que el agente falle por completo).</p>
+            </section>
+
+            <p>Este capítulo ha sido más conceptual para ilustrar cómo se podría abordar la interacción con el sistema de archivos. La clave es diseñar el estado y los nodos para manejar las operaciones deseadas y usar las bibliotecas de Python apropiadas dentro de esos nodos.</p>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <a href="capitulo2.html" class="button">&larr; Capítulo 2: Mi Primer Agente</a>
+                <a href="capitulo4.html" class="button">Siguiente: Capítulo 4 &rarr;</a>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+</body>
+</html>

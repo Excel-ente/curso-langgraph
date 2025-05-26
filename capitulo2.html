@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capítulo 2: Mi Primer Agente - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                <li>Capítulo 2</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1>Capítulo 2: Mi Primer Agente (Agente Básico de Manipulación de Estado)</h1>
+            <p>En este capítulo, daremos nuestros primeros pasos prácticos con LangGraph. Crearemos un agente muy simple cuyo propósito principal será modificar el estado que definimos en el capítulo anterior. Esto nos ayudará a entender los componentes clave: nodos, el grafo y los flujos.</p>
+
+            <section id="definicion-nodos">
+                <h2>Definición de Nodos (Agentes)</h2>
+                <p>En LangGraph, un "nodo" es la unidad fundamental de cómputo. Puedes pensar en un nodo como un agente individual o una función que realiza una tarea específica [8].</p>
+                <ul>
+                    <li>Cada nodo tiene acceso al estado global del grafo [8].</li>
+                    <li>Se definen como funciones simples de Python. Estas funciones aceptan el estado actual como argumento [8, 9].</li>
+                    <li>Dentro de la función del nodo, puedes modificar el estado.</li>
+                    <li>Es crucial que cada nodo <strong>retorne el estado modificado (o el original si no hubo cambios)</strong> [9]. Este retorno es lo que LangGraph utiliza para actualizar el estado global antes de pasarlo al siguiente nodo.</li>
+                </ul>
+                <p><strong>Analogía:</strong> Siguiendo con la analogía de la pizarra compartida (el estado), un nodo es como un especialista que se acerca a la pizarra. Lee la información relevante para su tarea, realiza sus cálculos o anotaciones (modifica el estado), y luego actualiza la pizarra para que el siguiente especialista pueda continuar.</p>
+                <p><strong>Ejemplo Práctico:</strong> Vamos a crear un nodo que modifique los campos <code>my_bar</code> y <code>customer_name</code> de nuestro estado <code>AgentState</code>.</p>
+                <pre><code class="language-python">from typing import TypedDict
+
+# (Recordatorio de la definición del estado del Capítulo 1)
+class AgentState(TypedDict):
+    my_bar: str
+    customer_name: str
+    # ... otros campos que podríamos añadir luego
+
+# Definición de nuestro primer nodo
+def update_details_node(state: AgentState) -> AgentState:
+    print("--- EJECUTANDO NODO: update_details_node ---")
+    # Modificamos el estado
+    current_customer = state.get("customer_name", "Cliente Desconocido")
+    new_my_bar_value = f"Información procesada para {current_customer}"
+    
+    updated_state = state.copy() # Es buena práctica copiar el estado para evitar mutaciones inesperadas
+    updated_state["my_bar"] = new_my_bar_value
+    updated_state["customer_name"] = "Cliente Ejemplo Actualizado"
+    
+    print(f"Estado modificado: my_bar='{updated_state['my_bar']}', customer_name='{updated_state['customer_name']}'")
+    return updated_state
+
+# Podríamos tener otro nodo
+def second_node(state: AgentState) -> AgentState:
+    print("--- EJECUTANDO NODO: second_node ---")
+    # Este nodo podría, por ejemplo, añadir un prefijo a my_bar
+    updated_state = state.copy()
+    updated_state["my_bar"] = "[INFO] " + updated_state["my_bar"]
+    print(f"Estado modificado en second_node: my_bar='{updated_state['my_bar']}'")
+    return updated_state
+</code></pre>
+                <p>En este ejemplo, <code>update_details_node</code> toma el estado, cambia <code>my_bar</code> basándose en <code>customer_name</code> y actualiza <code>customer_name</code>. Luego, <code>second_node</code> toma ese estado actualizado y le añade un prefijo a <code>my_bar</code>.</p>
+            </section>
+
+            <section id="construccion-grafo">
+                <h2>Construcción del Grafo</h2>
+                <p>Una vez que tenemos nuestros nodos (funciones Python), necesitamos construir un "grafo" que los organice y defina cómo se conectan.</p>
+                <ul>
+                    <li>Importamos <code>StateGraph</code> de <code>langgraph.graph</code> [7].</li>
+                    <li>Creamos una instancia de <code>StateGraph</code>, pasándole la definición de nuestro estado (<code>AgentState</code> en nuestro caso) [7]. Esto le dice al grafo qué forma tendrá el estado que manejará.</li>
+                    <li>Agregamos nuestros nodos al grafo usando el método <code>add_node</code>. A cada nodo se le asigna un nombre único (una cadena de texto) y se le asocia la función Python correspondiente [10].</li>
+                    <li>LangGraph tiene nodos predeterminados especiales: <code>START</code> (o `langgraph.graph.START`) y <code>END</code> (o `langgraph.graph.END`). No necesitamos agregarlos explícitamente, pero los usaremos para definir el inicio y fin del flujo [7, 10].</li>
+                </ul>
+                <p><strong>Ejemplo Práctico:</strong></p>
+                <pre><code class="language-python">from langgraph.graph import StateGraph, END
+
+# ... (definiciones de AgentState y nodos aquí arriba) ...
+
+# Crear el constructor del grafo
+workflow_builder = StateGraph(AgentState)
+
+# Añadir los nodos al grafo
+workflow_builder.add_node("updater_node", update_details_node) # "updater_node" es el nombre que le damos en el grafo
+workflow_builder.add_node("enhancer_node", second_node)   # "enhancer_node" es otro nombre único
+</code></pre>
+            </section>
+
+            <section id="definicion-flujos">
+                <h2>Definición de los Flujos (Edges)</h2>
+                <p>Los "edges" (aristas o flujos) conectan los nodos y definen el orden de ejecución o la ruta que seguirá el estado a través del grafo [10].</p>
+                <ul>
+                    <li>Utilizamos el método <code>add_edge</code> para especificar un flujo lineal entre nodos. Por ejemplo, desde el nodo de inicio (<code>START</code>) al primer nodo, del primer nodo al segundo, y así sucesivamente, hasta un nodo final (<code>END</code>) [10].</li>
+                    <li>LangGraph también permite <code>add_conditional_edge</code> para flujos más complejos basados en decisiones (lo veremos en detalle en el Capítulo 5) [10, 11]. Por ahora, nos centraremos en flujos lineales.</li>
+                    <li>Se establece un "punto de entrada" al grafo utilizando <code>set_entry_point</code>, indicando cuál es el primer nodo que se ejecutará después del <code>START</code>.</li>
+                    <li>De manera similar, algunos nodos pueden ser puntos de salida, conectándolos a <code>END</code>.</li>
+                </ul>
+                <p><strong>Ejemplo Práctico:</strong></p>
+                <pre><code class="language-python"># ... (código anterior de AgentState, nodos y workflow_builder) ...
+
+# Definir el punto de entrada del grafo
+workflow_builder.set_entry_point("updater_node")
+
+# Definir los flujos (edges)
+# Desde updater_node hacia enhancer_node
+workflow_builder.add_edge("updater_node", "enhancer_node")
+
+# Desde enhancer_node hacia el final del grafo
+workflow_builder.add_edge("enhancer_node", END) # END es una constante especial de langgraph
+</code></pre>
+                <p>Este flujo significa: Entra por <code>updater_node</code>, luego ejecuta <code>enhancer_node</code>, y después termina.</p>
+            </section>
+
+            <section id="compilacion-grafo">
+                <h2>Compilación del Grafo</h2>
+                <p>Una vez que hemos definido los nodos y los flujos, el último paso en la construcción es compilar el grafo [11, 12].</p>
+                <ul>
+                    <li>Se utiliza el método <code>compile()</code> en nuestra instancia de <code>StateGraph</code> (<code>workflow_builder</code> en nuestro ejemplo).</li>
+                    <li>Este método devuelve un objeto de grafo compilado, que es el que realmente ejecutaremos. Es importante distinguir entre el "builder" (nuestro <code>workflow_builder</code>), que usamos para definir la estructura, y el grafo compilado, que es la máquina ejecutable [12].</li>
+                </ul>
+                <p><strong>Ejemplo Práctico:</strong></p>
+                <pre><code class="language-python"># ... (código anterior) ...
+
+# Compilar el grafo
+app = workflow_builder.compile()
+
+# ¡Ahora 'app' es nuestro agente/grafo ejecutable!
+# Podemos invocarlo así:
+initial_state = AgentState(my_bar="Valor inicial", customer_name="Juan Perez", messages=[])
+final_state = app.invoke(initial_state)
+
+print("\n--- ESTADO FINAL DESPUÉS DE LA INVOCACIÓN ---")
+print(final_state)
+</code></pre>
+                <p>Si ejecutas todo este código, verás los `print` de cada nodo y el estado final modificado.</p>
+            </section>
+
+            <section id="depuracion-langgraph-studio">
+                <h2>Depuración con LangGraph Studio</h2>
+                <p>LangGraph viene con una herramienta visual muy útil para depurar y entender el flujo de nuestros agentes: LangGraph Studio [14].</p>
+                <ul>
+                    <li><strong>Instalación de la dependencia:</strong> Primero, necesitas instalar <code>langgraph-cli</code> [11].
+                        <pre><code class="language-bash">poetry add langgraph-cli
+# o pip install langgraph-cli</code></pre>
+                    </li>
+                    <li><strong>Archivo de configuración <code>langgraph.json</code>:</strong> Para que LangGraph Studio sepa dónde encontrar tu grafo, necesitas crear un archivo <code>langgraph.json</code> en la raíz de tu proyecto [13].
+                        <p>Contenido de <code>langgraph.json</code> (ejemplo):</p>
+                        <pre><code class="language-json">{
+    "notebook": false, // true si estuvieras trabajando en un Jupyter Notebook
+    "module": "app.main", // Ruta al módulo Python donde está tu 'app' compilada (ej. main.py dentro de una carpeta app)
+    "graph": "app", // El nombre de la variable que contiene el grafo compilado
+    "input": "{\"my_bar\": \"Entrada de prueba Studio\", \"customer_name\": \"Studio User\", \"messages\": []}", // Ejemplo de entrada JSON
+    "dependencies": [ // Opcional, pero útil si tu proyecto tiene una estructura específica
+        "." // Directorio raíz del proyecto
+    ]
+}
+// Asumiendo que tu código está en un archivo, por ejemplo, curso-langgraph/app/main.py
+// y dentro de main.py tienes:
+// workflow_builder = StateGraph(AgentState)
+// ... (nodos y edges) ...
+// app = workflow_builder.compile()
+</code></pre>
+                        <p>Ajusta <code>"module"</code> y <code>"graph"</code> según dónde hayas definido tu grafo compilado. Por ejemplo, si tienes un archivo <code>mi_primer_agente.py</code> en la raíz con <code>app = workflow_builder.compile()</code>, sería <code>"module": "mi_primer_agente"</code> y <code>"graph": "app"</code>.</p>
+                    </li>
+                    <li><strong>Ejecutar LangGraph Studio:</strong> Desde la terminal, en la raíz de tu proyecto, ejecuta [13, 14]:
+                        <pre><code class="language-bash">langgraph dev</code></pre>
+                    </li>
+                    <li>Esto abrirá LangGraph Studio en tu navegador (usualmente en <code>http://localhost:5173/</code>). Podrás visualizar el grafo, ver el flujo de ejecución paso a paso y cómo el estado se modifica en cada nodo [14, 15]. Puedes enviar entradas y observar el comportamiento de tu agente.</li>
+                    <li>LangGraph Studio está disponible para Mac (y generalmente funciona bien en otros sistemas operativos donde Python y Node.js/NPM estén disponibles, ya que es una aplicación web) [14].</li>
+                </ul>
+                <p><strong>Analogía:</strong> LangGraph Studio es como tener un diagrama de flujo interactivo de tu orquesta. Puedes ver qué músico (nodo) está tocando, qué información tiene en su partitura (estado) en ese momento, y cómo la música (flujo de datos) se mueve de un músico a otro.</p>
+            </section>
+
+            <section id="despliegue-fastapi">
+                <h2>Despliegue Básico con FastAPI</h2>
+                <p>Una vez que tu agente funciona, es probable que quieras hacerlo accesible a través de una API para que otras aplicaciones o servicios puedan interactuar con él [16]. FastAPI es un framework moderno y rápido para construir APIs con Python.</p>
+                <ul>
+                    <li><strong>Instalación de FastAPI y Uvicorn:</strong>
+                        <pre><code class="language-bash">poetry add fastapi uvicorn[standard]
+# o pip install fastapi uvicorn[standard]</code></pre>
+                    </li>
+                    <li><strong>Crear un archivo <code>api.py</code></strong> (o el nombre que prefieras) [16].</li>
+                    <li><strong>Importar el grafo compilado</strong> y FastAPI.</li>
+                    <li><strong>Crear un endpoint</strong> que reciba datos, invoque el grafo con un estado inicial basado en esos datos, y devuelva el estado final [17].</li>
+                </ul>
+                <p><strong>Ejemplo Práctico (<code>api.py</code>):</strong></p>
+                <pre><code class="language-python">from fastapi import FastAPI
+from pydantic import BaseModel # Para definir los modelos de datos de entrada/salida
+
+# Asumiendo que tu grafo 'app' y 'AgentState' están en 'mi_primer_agente.py'
+# Si están en el mismo archivo, no necesitas esta importación relativa compleja.
+# Pero si tu proyecto crece, es bueno organizarlo en módulos.
+# from .mi_primer_agente import app, AgentState # Ajusta la importación según tu estructura
+
+# --- INICIO: Copia de definiciones para que api.py sea autocontenido (idealmente importarías) ---
+from typing import TypedDict, List
+from langgraph.graph import StateGraph, END
+
+class AgentState(TypedDict):
+    my_bar: str
+    customer_name: str
+    messages: List[str]
+
+def update_details_node(state: AgentState) -> AgentState:
+    print("API: EJECUTANDO NODO: update_details_node")
+    current_customer = state.get("customer_name", "Cliente Desconocido")
+    new_my_bar_value = f"Información procesada para {current_customer} vía API"
+    updated_state = state.copy()
+    updated_state["my_bar"] = new_my_bar_value
+    updated_state["customer_name"] = "Cliente Ejemplo API"
+    return updated_state
+
+def second_node(state: AgentState) -> AgentState:
+    print("API: EJECUTANDO NODO: second_node")
+    updated_state = state.copy()
+    updated_state["my_bar"] = "[API INFO] " + updated_state["my_bar"]
+    return updated_state
+
+workflow_builder = StateGraph(AgentState)
+workflow_builder.add_node("updater_node", update_details_node)
+workflow_builder.add_node("enhancer_node", second_node)
+workflow_builder.set_entry_point("updater_node")
+workflow_builder.add_edge("updater_node", "enhancer_node")
+workflow_builder.add_edge("enhancer_node", END)
+app_langgraph = workflow_builder.compile() # Renombrado para no colisionar con FastAPI app
+# --- FIN: Copia de definiciones ---
+
+
+# Modelo Pydantic para la entrada de la API
+class RequestBody(BaseModel):
+    initial_my_bar: str
+    initial_customer_name: str
+
+# Modelo Pydantic para la respuesta de la API (opcional, pero buena práctica)
+# class ResponseBody(BaseModel):
+#     my_bar: str
+#     customer_name: str
+#     messages: List[str]
+
+
+# Crear la aplicación FastAPI
+api_app = FastAPI(title="Mi Primer Agente LangGraph API")
+
+@api_app.post("/invoke_agent/", response_model=AgentState) # response_model puede ser tu AgentState TypedDict
+async def invoke_agent_endpoint(body: RequestBody) -> AgentState:
+    initial_state = AgentState(
+        my_bar=body.initial_my_bar,
+        customer_name=body.initial_customer_name,
+        messages=[] # Puedes añadir más campos si los necesitas
+    )
+    # Invocar el grafo LangGraph
+    final_state = app_langgraph.invoke(initial_state)
+    return final_state
+
+# Para ejecutar: uvicorn api:api_app --reload
+# Luego puedes ir a http://127.0.0.1:8000/docs para ver la interfaz de Swagger UI
+# y probar tu endpoint.
+</code></pre>
+                <ul>
+                    <li><strong>Ejecutar el servidor FastAPI:</strong>
+                        <pre><code class="language-bash">uvicorn api:api_app --reload</code></pre>
+                        <p>(Asumiendo que tu archivo se llama <code>api.py</code> y la instancia de FastAPI se llama <code>api_app</code>).</p>
+                    </li>
+                    <li>Puedes probar el endpoint usando herramientas como Postman, curl, o directamente desde la documentación interactiva de FastAPI (usualmente en <code>http://127.0.0.1:8000/docs</code>). Verás el estado final devuelto como JSON [12].</li>
+                    <li>Este agente básico, aunque simple, ya está listo para ser "desplegado en la nube" si así lo quisieras, empaquetándolo por ejemplo en un contenedor Docker y usando servicios como Google Cloud Run, AWS Lambda, etc. [12].</li>
+                </ul>
+            </section>
+
+            <p>¡Felicidades! Has construido, depurado y expuesto tu primer agente básico con LangGraph. En los siguientes capítulos, exploraremos funcionalidades más avanzadas.</p>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <a href="capitulo1.html" class="button">&larr; Capítulo 1: Introducción</a>
+                <a href="capitulo3.html" class="button">Siguiente: Capítulo 3 &rarr;</a>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+</body>
+</html>

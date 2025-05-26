@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capítulo 5: Haciendo que los Agentes Interactúen - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                <li>Capítulo 5</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1>Capítulo 5: Haciendo que los Agentes Interactúen</h1>
+            <p>El verdadero poder de LangGraph brilla cuando orquestamos múltiples agentes (nodos) para colaborar en tareas complejas. En este capítulo, exploraremos cómo definir puntos de decisión y construir sistemas multiagente más sofisticados.</p>
+
+            <section id="sistemas-multiagente-complejos">
+                <h2>Sistemas Multiagente Complejos</h2>
+                <p>Como vimos en el Capítulo 1, los sistemas multiagente implican que diferentes agentes (nodos en LangGraph) colaboren [1]. LangGraph está precisamente diseñado para orquestar este tipo de sistemas [2, 18].</p>
+                <p>LangGraph soporta diversos flujos de control, incluyendo arquitecturas multi-agente y jerárquicas [19, 20]. Esto significa que podemos tener agentes que llaman a otros agentes, o un agente "supervisor" que decide qué especialista debe actuar a continuación.</p>
+                <p><strong>Analogía:</strong> Pensemos en un equipo de proyecto en una empresa. Hay un gestor de proyecto (un agente supervisor), un analista de datos (agente Excel), un especialista en TI (agente de sistema de archivos), y quizás un redactor (agente generador de texto). Cada uno tiene su especialidad, y el gestor de proyecto coordina sus esfuerzos para completar el proyecto global.</p>
+            </section>
+
+            <section id="puntos-decision-conditional-edges">
+                <h2>Definición de Puntos de Decisión (Conditional Edges)</h2>
+                <p>Para que los agentes interactúen de forma inteligente, el flujo no puede ser siempre lineal. Necesitamos puntos de decisión donde el grafo elija qué nodo ejecutar a continuación basándose en el estado actual. Aquí es donde entra <code>add_conditional_edges</code> (nótese la 's' al final, a diferencia de <code>add_conditional_edge</code> que también existe para un mapeo más simple) [10, 11].</p>
+                <p>Con <code>add_conditional_edges</code> (o <code>add_conditional_edge</code>), especificas:</p>
+                <ul>
+                    <li><strong>El nodo fuente:</strong> El nodo cuya salida determinará el siguiente paso.</li>
+                    <li><strong>Una función de condición:</strong> Esta función toma el estado actual y debe devolver el <em>nombre</em> (la cadena de texto que usaste en <code>add_node</code>) del siguiente nodo a ejecutar [10, 11].</li>
+                    <li><strong>Un diccionario de mapeo (para <code>add_conditional_edges</code>):</strong> Este diccionario mapea los posibles valores devueltos por la función de condición a los nombres de los nodos destino. Si la función de condición devuelve directamente el nombre del nodo, este mapeo puede ser más simple o implícito con <code>add_conditional_edge</code>.</li>
+                </ul>
+                <p>Esta decisión puede basarse en lógica programada directamente en la función de condición o, lo que es más común en sistemas de IA avanzados, en la salida de un Modelo de Lenguaje Grande (LLM) [10, 11]. El LLM puede "razonar" sobre el estado actual y decidir qué agente (nodo) es el más adecuado para continuar con la tarea.</p>
+                
+                <p><strong>Ejemplo Práctico (conceptual):</strong></p>
+                <pre><code class="language-python">from typing import TypedDict, Literal
+
+class RouterState(TypedDict):
+    user_request: str
+    decision: Literal["excel_task", "file_task", "general_query", "END"]
+    # ... otros campos de estado de los agentes especializados
+
+# Nodo que usa un LLM (simulado aquí) para decidir
+def router_node(state: RouterState) -> RouterState:
+    print("--- NODE: RouterNode ---")
+    request = state["user_request"].lower()
+    updated_state = state.copy()
+    if "excel" in request or "hoja de cálculo" in request:
+        updated_state["decision"] = "excel_task_node" # Nombre del nodo para tareas de Excel
+    elif "archivo" in request or "directorio" in request:
+        updated_state["decision"] = "file_system_node" # Nombre del nodo para tareas de archivos
+    elif "terminar" in request or "adiós" in request:
+        updated_state["decision"] = "END" # Palabra clave para terminar
+    else:
+        updated_state["decision"] = "general_query_node" # Un nodo para responder preguntas generales
+    print(f"Decisión del router: {updated_state['decision']}")
+    return updated_state
+
+# Función de condición para add_conditional_edges
+def route_logic(state: RouterState):
+    return state["decision"] # Devuelve el nombre del siguiente nodo
+
+# ... (definición de workflow_builder, excel_task_node, file_system_node, general_query_node) ...
+# workflow_builder.add_node("router", router_node)
+# workflow_builder.add_node("excel_task_node", excel_agent_entry_point) # Suponiendo que es el inicio de un subgrafo de Excel
+# workflow_builder.add_node("file_system_node", file_system_agent_entry_point) # Suponiendo que es el inicio de un subgrafo de archivos
+# workflow_builder.add_node("general_query_node", some_llm_qa_node)
+
+# workflow_builder.set_entry_point("router")
+
+# Definir los flujos condicionales
+# workflow_builder.add_conditional_edges(
+#     "router", # Nodo fuente
+#     route_logic, # Función que devuelve la clave de decisión
+#     { # Mapeo de claves a nodos destino
+#         "excel_task_node": "excel_task_node",
+#         "file_system_node": "file_system_node",
+#         "general_query_node": "general_query_node",
+#         "END": END
+#     }
+# )
+
+# Los nodos excel_task_node, file_system_node, general_query_node deberían luego:
+# 1. Realizar su tarea.
+# 2. Posiblemente volver al nodo "router" para una nueva decisión, o ir a END.
+# workflow_builder.add_edge("excel_task_node", "router") # Ejemplo de ciclo de vuelta al router
+# workflow_builder.add_edge("file_system_node", "router")
+# workflow_builder.add_edge("general_query_node", "router")
+</code></pre>
+                <p>Este ejemplo muestra cómo un nodo "router" podría dirigir el flujo a diferentes agentes especializados o finalizar la ejecución.</p>
+            </section>
+
+            <section id="orquestacion-colaborativa">
+                <h2>Orquestación de Agentes Colaborativos</h2>
+                <p>Ahora podemos diseñar un escenario donde los agentes que conceptualizamos en los capítulos anteriores (agente de sistema de archivos y agente de Excel) interactúen.</p>
+                <p><strong>Escenario de Ejemplo:</strong>
+                Imagina que el usuario pide: "Encuentra el archivo 'ventas_q1.xlsx' en mi carpeta 'Documentos', lee la hoja 'Resumen', calcula el total de la columna 'Ingresos', y dime el resultado."</p>
+                <ol>
+                    <li><strong>Agente Router/Supervisor (LLM):</strong>
+                        <ul>
+                            <li>Recibe la petición del usuario.</li>
+                            <li>Decide que primero se necesita el Agente de Sistema de Archivos para localizar el archivo. Pasa la información relevante (nombre del archivo, directorio base) al estado.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Agente de Sistema de Archivos (Nodo/Subgrafo):</strong>
+                        <ul>
+                            <li>Recibe del estado la tarea de buscar 'ventas_q1.xlsx' en 'Documentos'.</li>
+                            <li>Navega, encuentra el archivo y actualiza el estado con la ruta completa del archivo encontrado (ej. <code>state["found_file_path"] = "/ruta/a/Documentos/ventas_q1.xlsx"</code>).</li>
+                            <li>Si no lo encuentra, actualiza el estado con un error.</li>
+                            <li>Devuelve el control al Agente Router.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Agente Router/Supervisor (LLM):</strong>
+                        <ul>
+                            <li>Ve que el archivo fue encontrado (o no).</li>
+                            <li>Si se encontró, decide que ahora se necesita el Agente de Excel. Pasa la ruta del archivo y la tarea ("leer hoja 'Resumen', calcular total de 'Ingresos'") al estado.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Agente de Excel (Nodo/Subgrafo):</strong>
+                        <ul>
+                            <li>Recibe del estado la ruta del archivo y la tarea.</li>
+                            <li>Lee <code>state["found_file_path"]</code>.</li>
+                            <li>Usa Pandas para abrir el archivo, leer la hoja 'Resumen'.</li>
+                            <li>Calcula el total de la columna 'Ingresos'.</li>
+                            <li>Actualiza el estado con el resultado (ej. <code>state["calculated_total"] = 150000</code>).</li>
+                            <li>Devuelve el control al Agente Router.</li>
+                        </ul>
+                    </li>
+                     <li><strong>Agente Router/Supervisor (LLM) o Agente de Respuesta:</strong>
+                        <ul>
+                            <li>Ve el resultado del cálculo.</li>
+                            <li>Formula una respuesta para el usuario: "El total de ingresos del archivo 'ventas_q1.xlsx' es 150000."</li>
+                            <li>Actualiza el estado con esta respuesta final.</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p>La construcción del grafo implicaría definir nodos para cada agente (que podrían ser a su vez grafos compilados, permitiendo sub-agentes) y usar <code>add_conditional_edges</code> en el agente supervisor para dirigir el flujo según el progreso de la tarea y los resultados intermedios.</p>
+            </section>
+
+            <section id="manejo-estado-colaboracion">
+                <h2>Manejo del Estado en la Colaboración</h2>
+                <p>Como se vio en el escenario anterior, el estado compartido es absolutamente fundamental [1, 8]. Es el "pegamento" que une a los agentes.</p>
+                <ul>
+                    <li>Cada agente lee la información que necesita del estado.</li>
+                    <li>Cada agente escribe sus resultados o hallazgos de nuevo en el estado.</li>
+                    <li>El diseño del objeto de estado (<code>TypedDict</code>) debe ser lo suficientemente completo como para contener toda la información que los diferentes agentes podrían necesitar pasarse entre sí. Podría volverse bastante complejo para sistemas sofisticados.</li>
+                </ul>
+                <p><strong>Ejemplo de un Estado Compartido más Amplio:</strong></p>
+                <pre><code class="language-python">from typing import TypedDict, List, Optional, Any, Literal
+
+class OrchestratorState(TypedDict):
+    original_user_request: str
+    current_task_description: Optional[str]
+    
+    # Para el agente de archivos
+    file_search_path: Optional[str]
+    file_name_to_find: Optional[str]
+    found_file_path: Optional[str]
+    file_operation_status: Optional[str]
+    
+    # Para el agente de Excel
+    excel_sheet_to_read: Optional[str]
+    excel_column_to_process: Optional[str]
+    excel_data: Optional[Any] # DataFrame o lista de dicts
+    excel_result: Optional[Any]
+    excel_operation_status: Optional[str]
+    
+    # Para el router/supervisor
+    next_agent_to_call: Optional[Literal["file_agent", "excel_agent", "response_agent", "END"]]
+    
+    # Resultado final
+    final_response: Optional[str]
+    error_message: Optional[str]
+    
+    # Historial general
+    history: List[str]
+</code></pre>
+            </section>
+
+            <section id="depuracion-multiagente">
+                <h2>Depuración de Sistemas Multiagente</h2>
+                <p>LangGraph Studio sigue siendo tu mejor aliado aquí [14, 15].</p>
+                <ul>
+                    <li>Podrás ver el grafo completo, incluyendo los flujos condicionales.</li>
+                    <li>Puedes seguir la ejecución paso a paso, viendo cómo el estado evoluciona a medida que cada agente (nodo) realiza su parte.</li>
+                    <li>Es especialmente útil para depurar la lógica de los nodos de decisión (routers/supervisores): ¿está tomando el camino correcto? ¿La función de condición devuelve lo esperado?</li>
+                    <li>Permite identificar cuellos de botella o puntos donde un agente no está recibiendo la información correcta del estado, o no la está actualizando como se espera.</li>
+                </ul>
+                <p>La capacidad de LangGraph Studio para visualizar grafos complejos y el estado en cada paso es lo que realmente facilita la depuración de estos sistemas [15].</p>
+            </section>
+
+            <section id="consideraciones-adicionales">
+                <h2>Consideraciones Adicionales (Opcional)</h2>
+                <p>Para sistemas aún más robustos y listos para producción:</p>
+                <ul>
+                    <li><strong>Human-in-the-Loop [20, 21]:</strong> LangGraph soporta la intervención humana. En ciertos puntos del grafo (especialmente después de una decisión crítica o si un agente tiene baja confianza), el flujo puede pausarse, permitiendo a un humano inspeccionar el estado, modificarlo si es necesario, y luego reanudar la ejecución [21, 22]. Esto se puede lograr haciendo que un nodo condicional dirija a un estado de "espera" si se requiere intervención.</li>
+                    <li><strong>LangGraph Cloud (anteriormente LangSmith/LangGraph Platform):</strong> Para desplegar, monitorear y escalar aplicaciones LangGraph, LangChain ofrece servicios en la nube [22-24]. Estos proporcionan APIs para UX, escalabilidad, persistencia gestionada, trazabilidad detallada de las ejecuciones, y herramientas de análisis y depuración más avanzadas que LangGraph Studio local. Es ideal para cuando tu proyecto pasa de la experimentación a la producción.</li>
+                </ul>
+            </section>
+
+            <p>¡Has llegado al final de este curso básico! Ahora tienes una comprensión fundamental de cómo diseñar, construir y orquestar sistemas multiagente utilizando LangGraph. El siguiente paso es practicar, experimentar con diferentes LLMs y herramientas, y construir tus propias aplicaciones de IA cíclicas y con estado.</p>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <a href="capitulo4.html" class="button">&larr; Capítulo 4: Agente Excel</a>
+                <a href="tabla-de-contenidos.html" class="button">Volver a Tabla de Contenidos</a>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+</body>
+</html>
