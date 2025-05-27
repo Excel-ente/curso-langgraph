@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad Capítulo 1: Agente Simple con Ollama Local - Curso LangGraph</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Curso LangGraph</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li class="current"><a href="guia-de-estudio.html">Guía de Estudio</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="tabla-de-contenidos.html">Tabla de Contenidos</a></li>
+                <li><a href="capitulo1.html">Capítulo 1</a></li>
+                <li>Actividad Capítulo 1</li>
+            </ul>
+        </nav>
+
+        <article class="main-content chapter-content">
+            <h1><emoji_code>🛠️</emoji_code> Actividad: Creando tu Primer Agente con Ollama Local</h1>
+            <p>En esta actividad, seguiremos los pasos iniciales para configurar tu entorno y comenzar a estructurar un agente que utilice Ollama para la inteligencia artificial local. Esta guía se basa en el documento "Guía Completa: Creación de Agente LangGraph Avanzado con Ollama" [cite: 1] y los conceptos introducidos en el Capítulo 1.</p>
+            <p><strong>Objetivo:</strong> Familiarizarse con la instalación de Ollama, la configuración del entorno Python y la estructura inicial de un agente LangGraph.</p>
+
+            <section id="requisitos-previos">
+                <h2>1. Requisitos Previos (Conceptual)</h2>
+                <p>Antes de comenzar, es importante asegurarse de que tu sistema cumple con ciertos requisitos. Según la guía proporcionada:</p>
+                <ul>
+                    <li><strong>Hardware Mínimo:</strong>
+                        <ul>
+                            <li>RAM: 8 GB (Recomendado: 16 GB, Óptimo: 32 GB) [cite: 5]</li>
+                            <li>CPU: 4 cores (Recomendado: 8 cores, Óptimo: 16+ cores) [cite: 5]</li>
+                            <li>Almacenamiento: 10 GB libres (Recomendado: 20 GB libres, Óptimo: 50 GB libres) [cite: 5]</li>
+                            <li>GPU: No requerida (Opcional para mejor rendimiento, ej. NVIDIA GTX 1060+ o RTX 4090) [cite: 5]</li>
+                        </ul>
+                    </li>
+                    <li><strong>Software:</strong>
+                        <ul>
+                            <li>Sistema Operativo: Windows 10/11, macOS 10.15+, Linux Ubuntu 18.04+ [cite: 6]</li>
+                            <li>Python: 3.8 o superior (Recomendado: 3.10+) [cite: 6]</li>
+                            <li>Conexión a Internet (para descargas) [cite: 7]</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>La guía también sugiere modelos de Ollama según el hardware disponible[cite: 8]:</p>
+                <ul>
+                    <li>8 GB RAM: phi3:mini (~2.3 GB) [cite: 8]</li>
+                    <li>16 GB RAM: phi4:latest (~7.4 GB) (Recomendado por la guía) [cite: 8]</li>
+                    <li>32 GB+ RAM: llama2:70b (~39 GB) [cite: 8]</li>
+                </ul>
+            </section>
+
+            <section id="instalacion-ollama">
+                <h2>2. Instalación y Configuración de Ollama</h2>
+                <p>Sigue estos pasos para instalar y configurar Ollama en tu sistema, como se detalla en la guía[cite: 1]:</p>
+                <ol>
+                    <li><strong>Descargar Ollama:</strong>
+                        <ul>
+                            <li>Windows: Ve a <a href="http://ollama.ai" target="_blank">ollama.ai</a>, descarga y ejecuta el instalador `OllamaSetup.exe`[cite: 9].</li>
+                            <li>macOS: Usa Homebrew (`brew install ollama`) o descarga directa desde <a href="http://ollama.ai" target="_blank">ollama.ai</a>[cite: 9].</li>
+                            <li>Linux: Usa el script de instalación (`curl -fsSL https://ollama.ai/install.sh | sh`) o el gestor de paquetes de tu distribución (ej. `yay -S ollama` para Arch Linux)[cite: 9].</li>
+                        </ul>
+                    </li>
+                    <li><strong>Inicializar Ollama:</strong> Abre una terminal y ejecuta `ollama serve`[cite: 10]. Deberías ver un mensaje indicando que Ollama está corriendo en `http://localhost:11434`[cite: 10].</li>
+                    <li><strong>Descargar un Modelo:</strong> En una nueva terminal, descarga el modelo recomendado (u otro según tu hardware). Por ejemplo, para `phi4:latest`[cite: 10]:
+                        <pre><code class="language-bash">ollama pull phi4:latest</code></pre>
+                        <p>La guía también menciona `phi3:mini`, `llama2:latest`, y `mistral:latest` como alternativas[cite: 10].</p>
+                    </li>
+                    <li><strong>Probar el Modelo:</strong> En la terminal, ejecuta `ollama run phi4:latest` (o el modelo que hayas descargado)[cite: 11]. Prueba con un saludo como "Hola, ¿puedes ayudarme con archivos?" y espera una respuesta coherente[cite: 11]. Escribe `/bye` para salir[cite: 12].</li>
+                </ol>
+            </section>
+
+            <section id="configuracion-python">
+                <h2>3. Configuración del Entorno Python</h2>
+                <p>Ahora, configuremos el entorno de Python para nuestro proyecto de agente[cite: 1]:</p>
+                <ol>
+                    <li><strong>Verificar Python:</strong> Asegúrate de tener Python 3.8+ (idealmente 3.10+)[cite: 14].
+                        <pre><code class="language-bash">python --version</code></pre>
+                    </li>
+                    <li><strong>Crear Estructura de Proyecto:</strong> Crea un directorio para tu proyecto, por ejemplo[cite: 14]:
+                        <pre><code class="language-bash">mkdir -p D:\AGENTES\agente_001_filesystem
+cd D:\AGENTES\agente_001_filesystem</code></pre>
+                        <p>(Ajusta la ruta según tu sistema operativo y preferencias, ej. `~/AGENTES/agente_001_filesystem` en Linux/macOS [cite: 14]).</p>
+                    </li>
+                    <li><strong>Crear Entorno Virtual:</strong> Dentro del directorio de tu proyecto[cite: 14]:
+                        <pre><code class="language-bash">python -m venv venv</code></pre>
+                        Actívalo:
+                        <ul>
+                            <li>Windows: `venv\Scripts\activate` [cite: 14]</li>
+                            <li>Linux/macOS: `source venv/bin/activate` [cite: 14]</li>
+                        </ul>
+                        Deberías ver `(venv)` al inicio de tu terminal.
+                    </li>
+                    <li><strong>Crear `requirements.txt`:</strong> Crea un archivo llamado `requirements.txt` en la raíz de tu proyecto con el siguiente contenido[cite: 15]:
+                        <pre><code class="language-text"># Dependencias principales para el Agente LangGraph Avanzado con Ollama
+langgraph&gt;=0.2.0
+langchain-ollama&gt;=0.2.0
+langchain-core&gt;=0.3.0
+
+# Dependencias base (se instalan automáticamente)
+langchain&gt;=0.3.0
+typing-extensions&gt;=4.0.0
+pathlib2&gt;=2.3.0
+httpx&gt;=0.25.0
+requests&gt;=2.31.0
+
+# Dependencias para manejo de datos
+pandas&gt;=2.0.0
+numpy&gt;=1.24.0
+
+# Dependencias para archivos de oficina
+openpyxl&gt;=3.1.0
+python-docx&gt;=0.0.11 # La guía indica 0.0.11, verificar si es python-docx o docx
+PyPDF2&gt;=3.0.0
+
+# Dependencias adicionales útiles
+python-dateutil&gt;=2.8.0</code></pre>
+                        <p><em>Nota: La guía menciona `python-docx>=0.0.11`[cite: 15]. Típicamente, la biblioteca es `python-docx`. Asegúrate de instalar la correcta según los mensajes de error si surgen.</em></p>
+                    </li>
+                    <li><strong>Instalar Dependencias</strong>[cite: 15]:
+                        <pre><code class="language-bash">pip install -r requirements.txt</code></pre>
+                        Puedes verificar la instalación con `pip list | grep langgraph` (o `findstr` en Windows)[cite: 15].
+                    </li>
+                </ol>
+            </section>
+
+            <section id="creacion-agente-basico">
+                <h2>4. Creación del Agente Básico (Conceptual)</h2>
+                <p>El PDF "Guía Completa: Creación de Agente LangGraph Avanzado con Ollama" describe la creación de un agente complejo[cite: 1]. En esta actividad inicial, nos centraremos en entender las primeras piezas del código.</p>
+                <p>Crea un archivo `advanced_filesystem_agent.py` en tu proyecto[cite: 17].</p>
+
+                <h3>Estructura Base y Configuración Global [cite: 17]</h3>
+                <p>Al inicio de tu archivo, incluirás importaciones necesarias y la configuración global para Ollama:</p>
+                <pre><code class="language-python">import os
+import sys
+import json
+# ... (otras importaciones necesarias de la guía) ...
+from typing import TypedDict, List, Annotated, Dict, Any
+from pathlib import Path
+from datetime import datetime
+
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langchain_ollama import ChatOllama
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+
+# CONFIGURACIÓN GLOBAL DEL MODELO
+OLLAMA_MODEL = "phi4:latest" # Opciones: phi3:mini, llama2:latest, mistral:latest, etc. [cite: 17]
+OLLAMA_BASE_URL = "http://localhost:11434" [cite: 17]
+OLLAMA_TEMPERATURE = 0.1 [cite: 17]
+OLLAMA_NUM_PREDICT = 512 [cite: 17]
+OLLAMA_TIMEOUT = 60 [cite: 17]
+</code></pre>
+
+                <h3>Definición del Estado del Agente [cite: 18]</h3>
+                <p>Como vimos en el Capítulo 1, el estado es fundamental. La guía define un `AgentState` usando `TypedDict`[cite: 18]. Este estado se comparte entre todos los nodos[cite: 19].</p>
+                <pre><code class="language-python">class AgentState(TypedDict):
+    """Estado compartido entre todos los nodos del agente.""" [cite: 18]
+    messages: Annotated[List, add_messages] # Historial de conversación [cite: 20]
+    current_directory: str # Directorio actual [cite: 20]
+    last_operation: str # Última operación realizada [cite: 20]
+    operation_result: str # Resultado de la última operación [cite: 20]
+    user_input: str # Entrada del usuario [cite: 20]
+    file_context: Dict[str, Any] # Contexto de archivos para edición [cite: 20]
+</code></pre>
+
+                <h3>Clase Principal del Agente (Inicialización)</h3>
+                <p>La guía define una clase `AdvancedFileSystemAgent`[cite: 22]. El método `__init__` es crucial para configurar el LLM, directorios de trabajo y verificaciones iniciales[cite: 22].</p>
+                <pre><code class="language-python">class AdvancedFileSystemAgent:
+    def __init__(self):
+        """Inicializar el agente con Ollama local y el grafo.""" [cite: 22]
+        self.llm = ChatOllama(
+            model=OLLAMA_MODEL,
+            base_url=OLLAMA_BASE_URL,
+            temperature=OLLAMA_TEMPERATURE,
+            num_predict=OLLAMA_NUM_PREDICT,
+            timeout=OLLAMA_TIMEOUT
+        ) [cite: 22]
+
+        # Directorio base y de trabajo
+        self.base_directory = Path("D:/AGENTES/agente_001_filesystem") # Ajustar ruta [cite: 22]
+        self.base_directory.mkdir(parents=True, exist_ok=True) [cite: 22]
+        self.work_directory = self.base_directory / "workspace" [cite: 22]
+        self.work_directory.mkdir(exist_ok=True) [cite: 22]
+        self.current_dir = self.work_directory [cite: 22]
+
+        self.supported_formats = {
+            'text': ['.txt', '.md', '.py', '.js', '.html', '.css', '.xml', '.yml', '.yaml'],
+            'office': ['.xlsx', '.docx', '.csv'],
+            'data': ['.json', '.csv'],
+            'pdf': ['.pdf']
+        } [cite: 22]
+
+        self._check_optional_dependencies() [cite: 22]
+        self._verify_ollama_connection() [cite: 22]
+        
+        # El grafo se creará en un paso posterior
+        # self.graph = self._create_graph() # [cite: 23] (Referencia al siguiente paso en el PDF)
+</code></pre>
+                <p>La implementación de `_check_optional_dependencies` [cite: 25] y `_verify_ollama_connection` [cite: 25] se encuentra en las páginas 12-14 de la guía[cite: 24, 25, 26]. Estas funciones ayudan a asegurar que el entorno esté correctamente configurado antes de que el agente intente operar.</p>
+            </section>
+
+            <section id="pasos-siguientes">
+                <h2>5. Pasos Siguientes (Conceptual)</h2>
+                <p>La guía completa detalla muchos más pasos para construir el agente avanzado, incluyendo[cite: 1]:</p>
+                <ul>
+                    <li>Creación del grafo LangGraph (`_create_graph`) con nodos y flujos condicionales[cite: 26].</li>
+                    <li>Implementación de un nodo clasificador de intenciones (`_classify_intent`, `_route_based_on_intent`)[cite: 27, 28, 29, 30, 31].</li>
+                    <li>Implementación de nodos para navegación (`_navigate_filesystem`)[cite: 32, 33, 34, 35, 36].</li>
+                    <li>Implementación de nodos para lectura multi-formato (`_read_file_advanced` y métodos específicos por tipo de archivo)[cite: 38, 39, 40, 41, 42, 43, 44, 45].</li>
+                    <li>Implementación de nodos para escritura y edición (no mostrados en detalle aquí pero parte del agente avanzado)[cite: 2].</li>
+                    <li>Implementación de un nodo para generar respuestas (`_generate_response`)[cite: 26].</li>
+                    <li>Una función principal (`main`) para interactuar con el agente y scripts de prueba (`test_agent.py`)[cite: 46, 47, 48, 49, 50, 51].</li>
+                </ul>
+                <p>El objetivo de esta actividad introductoria es tener Ollama operativo, el entorno Python configurado con las dependencias necesarias, y una comprensión inicial de cómo se estructura el archivo principal del agente y su estado. Los nodos y la lógica del grafo más complejos se explorarán en actividades o capítulos posteriores.</p>
+                <p>¡Buen trabajo al completar estos pasos iniciales!</p>
+            </section>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <a href="capitulo1.html" class="button">&larr; Volver al Capítulo 1</a>
+                <a href="capitulo2.html" class="button">Siguiente: Capítulo 2 &rarr;</a>
+            </div>
+
+        </article>
+    </div>
+
+    <footer>
+        <p>Curso de LangGraph &copy; 2025</p>
+    </footer>
+
+</body>
+</html>
